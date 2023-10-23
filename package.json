@@ -1,0 +1,30 @@
+{
+  "name": "@evokegroup/ulid",
+  "version": "1.1.0",
+  "description": "Library for creating, parsing, and converting universally unique lexicographically sortable identifiers (ULID) in ULID or UUID formats.",
+  "main": "./dist-cjs/index.js",
+  "module": "./dist-es/index.js",
+  "types": "./dist-types/index.d.ts",
+  "files": [
+    "dist-cjs",
+    "dist-esm",
+    "dist-types"
+  ],
+  "scripts": {
+    "build": "npm run build:cjs && npm run build:es && npm run build:types",
+    "build:cjs": "tsc --project tsconfig.cjs.json",
+    "build:es": "tsc --project tsconfig.esm.json",
+    "build:types": "tsc --project tsconfig.types.json",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.8.4",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  }
+}
