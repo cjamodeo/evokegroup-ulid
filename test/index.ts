@@ -19,19 +19,12 @@ console.log(ulid.toUUID(id));
 console.log(ulid.fromUUID(ulid.toUUID(id)));
 console.log(ulid.toUUID(ulid.fromUUID(ulid.toUUID(id))));
 
-// console.log(` - Recreate 01HDGXKCW99TXTBEEHYPTH5QHF: ${ulid(1698153739145, 371806068612356197506607n) === '01HDGXKCW99TXTBEEHYPTH5QHF'}`);
-
-
+console.log();
+console.log('ulidtools.com generated IDs');
 console.log(ulid.toUUID('01HDGX93NBW6AY9C60GH2TWDP4') === '018B61D4-8EAB-E195-E4B0-C08445AE36C4');
 console.log(ulid.fromUUID('018B61D4-8EAB-E195-E4B0-C08445AE36C4') === '01HDGX93NBW6AY9C60GH2TWDP4');
 
-// for (let i = 0; i < 100000; i++) {
-//   const uuid = randomUUID();
-//   const uuid2 = ulid.toUUID(ulid.fromUUID(uuid)).toLowerCase();
-//   if (uuid !== uuid2) {
-//     console.log(`failed conversion: ${uuid}`);
-//   }
-// }
+
 console.log();
 console.log('Factory - ULIDs');
 let factory = ulid.factory();
