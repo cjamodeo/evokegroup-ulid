@@ -214,11 +214,8 @@ ulid.factory = (() => {
     let data = '';
     if (dt <= FACTORY_DATA_MAX) {
       data = dt.toString(16);
-      // 40008000000000000000
-      // 4000ffffffffffffffff
-      // 40018000000000000000
       if (!/^[89a-f]$/.test(data.charAt(4))) {
-        dt += BigInt(9223372036854775808);
+        dt += BigInt(9223372036854775808); // 40010000000000000000 => 40018000000000000000
         data = dt.toString(16);
       }
       dt++;
