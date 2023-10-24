@@ -1,5 +1,5 @@
-import { webcrypto } from 'crypto';
-import { ulid } from '../src_dev/index';
+import { randomUUID } from 'crypto';
+import { ulid } from '../src/index';
 
 interface Tests {
   passed: number;
@@ -17,7 +17,7 @@ interface Tests {
 // })();
 
 // (() => {
-//   const uuid = webcrypto.randomUUID();
+//   const uuid = randomUUID();
 //   console.log(ulid.data(uuid));
 //   const id = ulid.convert(uuid, 'ulid');
 //   const uuid_back = ulid.convert(id, 'uuid').toLowerCase();
@@ -38,7 +38,7 @@ interface Tests {
   const MAX = 100000;
   for (let i=0; i<MAX; i++) {
     const id = ulid();
-    const flag = ulid.convert(ulid.convert(id, 'uuid'), 'ulid') === id;
+    const flag = ulid.fromUUID(ulid.toUUID(id)) === id;
     if (!flag) {
       tests.failed.push(id);
     } else {
@@ -58,7 +58,7 @@ interface Tests {
   const MAX = 100000;
   for (let i=0; i<MAX; i++) {
     const id = ulid.uuid();
-    const flag = ulid.convert(ulid.convert(id, 'ulid'), 'uuid') === id;
+    const flag = ulid.toUUID(ulid.fromUUID(id)) === id;
     if (!flag) {
       tests.failed.push(id);
     } else {
@@ -78,11 +78,11 @@ interface Tests {
   };
   const MAX = 100000;
   for (let i=0; i<MAX; i++) {
-    const id = webcrypto.randomUUID();
-    const flag = ulid.convert(ulid.convert(id, 'ulid'), 'uuid').toLowerCase() === id;
+    const id = randomUUID();
+    const flag = ulid.toUUID(ulid.fromUUID(id)).toLowerCase() === id;
     if (!flag) {
       tests.failed.push(id);
-      tests.data?.push(`=> ${ulid.convert(id, 'ulid')} => ${ulid.convert(ulid.convert(id, 'ulid'), 'uuid').toLowerCase()}`);
+      tests.data?.push(`=> ${ulid.fromUUID(id)} => ${ulid.toUUID(ulid.fromUUID(id)).toLowerCase()}`);
     } else {
       tests.passed++;
     }
@@ -110,7 +110,7 @@ interface Tests {
   const MAX = Object.keys(data).length;
   Object.keys(data).forEach((key) => {
     const id = key as keyof typeof data;
-    const flag = ulid.convert(key as string, 'uuid') === data[id] && ulid.convert(data[id], 'ulid') === key as string;
+    const flag = ulid.toUUID(key as string) === data[id] && ulid.fromUUID(data[id]) === key as string;
     if (!flag) {
       tests.failed.push(key as string);
     } else {
