@@ -123,6 +123,63 @@ import { ulid } from '@evokegroup/ulid';
 const uuid = ulid.toUUID('01HDEKH72J8ZXSFAR9AM4S3A8W'); // 018B5D38-9C52-47FB-97AB-09550991A91C
 ```
 
+## ulid.factory()
+
+Create a ULID factory which will increment the ID with every generation. The ID will increment regardless of which ID format is generated.
+
+**returns** `Factory`
+
+| Parameter | Type | Default | Description |
+| --- | --- | --- | --- |
+| args | `object` | | |
+| args.timestamp? | `number` | `Date.now()` | The timestamp |
+| args.data? | `bigint` | Randomly generated | The seed data value. If this value is less than `FACTORY_DATA_MIN` or greater than `FACTORY_DATA_MAX` it will be set to `FACTORY_DATA_MIN`. |
+
+```javascript
+import { ulid } from '@evokegroup/ulid';
+
+let factory = ulid.factory();
+// with a timestamp
+factory = ulid.factory({ timestamp: 1698160540736 });
+// with a timestamp and data seed
+factory = ulid.factory({ timestamp: 1698160540736, data: 369740473983206468055316n });
+
+const ulid1 = factory.ulid(); // 01HDH42Z209S5TQNW6QK6BEW8M
+const uuid2 = factory.uuid(); // 018B6241-7C40-4E4B-ABD7-86BCCCB77115
+const ulid3 = factory.ulid(); // 01HDH42Z209S5TQNW6QK6BEW8P
+const uuid4 = factory.uuid(); // 018B6241-7C40-4E4B-ABD7-86BCCCB77117
+```
+
+## Factory.ulid()
+
+Returns a ULID from the factory.
+
+**returns** `string`
+
+```javascript
+import { ulid } from '@evokegroup/ulid';
+
+const factory = ulid.factory();
+const ulid1 = factory.ulid(); // 01HDH8AJWQ9X7ABB2P330S362Y
+const ulid2 = factory.ulid(); // 01HDH8AJWQ9X7ABB2P330S362Z
+const ulid3 = factory.ulid(); // 01HDH8AJWQ9X7ABB2P330S3630
+```
+
+## Factory.uuid()
+
+Returns a UUID v4 from the factory.
+
+**returns** `string`
+
+```javascript
+import { ulid } from '@evokegroup/ulid';
+
+const factory = ulid.factory();
+const uuid1 = factory.uuid(); // 018B6286-CC0B-4F0B-DDEC-B6040D445C4E
+const uuid2 = factory.uuid(); // 018B6286-CC0B-4F0B-DDEC-B6040D445C4F
+const uuid3 = factory.uuid(); // 018B6286-CC0B-4F0B-DDEC-B6040D445C50
+```
+
 ## Constants
 
 | Name | Type | Description |
@@ -130,3 +187,5 @@ const uuid = ulid.toUUID('01HDEKH72J8ZXSFAR9AM4S3A8W'); // 018B5D38-9C52-47FB-97
 | ULID_CHARS | `string` | The characters used to encode a ULID |
 | ULID_TIMESTAMP_LENGTH | `number` | The length of the timestamp portion of a ULID |
 | UUID_TIMESTAMP_LENGTH | `number` | The length of the timestamp portion of a UUID |
+| FACTORY_DATA_MIN | `bigint` | The minimum data seed value for the `Factory` |
+| FACTORY_DATA_MAX | `bigint` | The maximum data seed value for the `Factory` |
