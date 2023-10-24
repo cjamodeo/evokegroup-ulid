@@ -6,9 +6,10 @@ interface Tests {
   data?: string[];
   failed: string[];
 }
+/*
 console.log(ulid());
 console.log(ulid.uuid());
-const timestamp = Date.now();
+const timestamp = 281474976710655; // Date.now();
 console.log(timestamp);
 const id = ulid(timestamp);
 console.log(id);
@@ -65,10 +66,16 @@ for (let i = 0; i < 10; i++) {
     console.log(factory.uuid());
   }
 }
+*/
 
-
-console.log();
-factory = ulid.factory({ data: 302249901647731003228158n });
-for (let i = 0; i < 4; i++) {
-  console.log(factory.uuid());
-}
+(() => {
+  console.log();
+  const factory = ulid.factory(); // { timestamp: 281474976710655, data: 377789318629571617095677n });
+  for (let i = 0; i < 4; i++) {
+    try {
+      console.log(factory.uuid());
+    } catch (err) {
+      console.log((err as Error).message);
+    }
+  }
+})();

@@ -1,6 +1,8 @@
 export declare const ULID_CHARS: string;
 export declare const ULID_TIMESTAMP_LENGTH: number;
 export declare const UUID_TIMESTAMP_LENGTH: number;
+export declare const TIMESTAMP_MIN = 0;
+export declare const TIMESTAMP_MAX = 281474976710655;
 export declare const FACTORY_DATA_MIN: bigint;
 export declare const FACTORY_DATA_MAX: bigint;
 export declare function ulid(timestamp?: number): string;

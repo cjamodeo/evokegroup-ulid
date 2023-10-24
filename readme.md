@@ -189,3 +189,5 @@ const uuid3 = factory.uuid(); // 018B6286-CC0B-4F0B-DDEC-B6040D445C50
 | UUID_TIMESTAMP_LENGTH | `number` | The length of the timestamp portion of a UUID |
 | FACTORY_DATA_MIN | `bigint` | The minimum data seed value for the `Factory` |
 | FACTORY_DATA_MAX | `bigint` | The maximum data seed value for the `Factory` |
+| TIMESTAMP_MIN | `number` | The minimum allowed timestamp value |
+| TIMESTAMP_MAX | `number` | The maximum allowed timestamp value |

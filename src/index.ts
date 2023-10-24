@@ -3,13 +3,18 @@ import crypto from 'crypto';
 export const ULID_CHARS: string = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 export const ULID_TIMESTAMP_LENGTH: number = 10;
 export const UUID_TIMESTAMP_LENGTH: number = 12;
-export const FACTORY_DATA_MIN = BigInt(302240678275694148452352);
-export const FACTORY_DATA_MAX = BigInt(377789318629571617095679);
+export const TIMESTAMP_MIN = 0;
+export const TIMESTAMP_MAX = 281474976710655; // A timestamp greater than this value would have more than 12 characters in the UUID format
+
+export const FACTORY_DATA_MIN = BigInt('302240678275694148452352');
+export const FACTORY_DATA_MAX = BigInt('377789318629571617095679');
 
 const regexULID = /^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$/i;
 const regexUUID = /^\{?[0-9A-F]{8}-?[0-9A-F]{4}-?[0-9A-F]{4}-?[0-9A-F]{4}-?[0-9A-F]{12}\}?$/i;
 
 const ERROR_INVALID = 'Invalid format';
+const ERROR_TIMESTAMP = `Timestamp (##VALUE##) must be between ${TIMESTAMP_MIN} and ${TIMESTAMP_MAX}`;
+const ERROR_DATA = `Data value (##VALUE##) must be between ${FACTORY_DATA_MIN} and ${FACTORY_DATA_MAX}`;
 
 type IDFormat = 'ulid' | 'uuid';
 
@@ -21,14 +26,20 @@ function isUUID(id: string): boolean {
   return typeof (id) == 'string' && regexUUID.test(id);
 }
 
-function getIdFormat(id: string): IDFormat | null {
-  return isULID(id) ? 'ulid' : isUUID(id) ? 'uuid' : null;
+function getIdFormat(id: string): IDFormat {
+  const format: IDFormat | null = isULID(id) ? 'ulid' : isUUID(id) ? 'uuid' : null;
+  if (format === null) {
+    throw new Error(ERROR_INVALID);
+  }
+  return format;
 }
 
 function parseBigInt(str: string, radix: number): bigint {
-  return str.split('').reduce((r, v) => {
+  const negate = str.charAt(0) === '-';
+  const big: bigint = str.slice(negate ? 1 : 0).split('').reduce((r, v) => {
     return r * BigInt(radix) + BigInt(parseInt(v, radix));
   }, BigInt(0));
+  return negate ? -big : big;
 }
 
 function base32ToCrockford(str: string): string {
@@ -129,11 +140,7 @@ function convertID(id: string, to: IDFormat): string {
   if (typeof (id) != 'string' || typeof (to) != 'string') {
     throw new Error(ERROR_INVALID);
   }
-  const from: IDFormat | null = getIdFormat(id);
-  if (from === null) {
-    throw new Error(ERROR_INVALID);
-  }
-
+  const from: IDFormat = getIdFormat(id);
   if (from === to) {
     return id;
   } else {
@@ -147,6 +154,12 @@ function convertID(id: string, to: IDFormat): string {
   }
 }
 
+function validateTimestamp(timestamp: number) {
+  if (timestamp < TIMESTAMP_MIN || timestamp > TIMESTAMP_MAX) {
+    throw new Error(ERROR_TIMESTAMP.replace('##VALUE##', timestamp.toString()));
+  }
+}
+
 function formatULID(timestamp: string, data: string) {
   return `${timestamp.padStart(ULID_TIMESTAMP_LENGTH, '0')}${data.padStart(16, '0')}`;
 }
@@ -156,15 +169,19 @@ function formatUUID(timestamp: string, data: string) {
 }
 
 export function ulid(timestamp?: number): string {
+  timestamp = timestamp ?? Date.now();
+  validateTimestamp(timestamp);
   return formatULID(
-    encodeTimestamp(timestamp ?? Date.now()), 
+    encodeTimestamp(timestamp), 
     randomData('ulid')
   );
 }
 
 ulid.uuid = (timestamp?: number): string => {
+  timestamp = timestamp ?? Date.now();
+  validateTimestamp(timestamp);
   return formatUUID(
-    encodeTimestamp(timestamp ?? Date.now(), 'uuid'),
+    encodeTimestamp(timestamp, 'uuid'),
     randomData('uuid')
   );
 };
@@ -174,18 +191,12 @@ ulid.is = (id: string): boolean => {
 };
 
 ulid.timestamp = (id: string): number => {
-  const format: IDFormat | null = getIdFormat(id);
-  if (format === null) {
-    throw new Error(ERROR_INVALID);
-  }
+  const format: IDFormat = getIdFormat(id);
   return decodeTimestamp(id, format);
 };
 
 ulid.data = (id: string): bigint => {
-  const format: IDFormat | null = getIdFormat(id);
-  if (format === null) {
-    throw new Error(ERROR_INVALID);
-  }
+  const format: IDFormat = getIdFormat(id);
   if (format === 'uuid') {
     return parseBigInt(cleanUUID(id).substring(UUID_TIMESTAMP_LENGTH).toLowerCase(), 16);
   } else {
@@ -211,35 +222,41 @@ ulid.factory = (() => {
   let f: IDFormat = 'ulid';
   
   function generate(): string {
-    let data = '';
-    if (dt <= FACTORY_DATA_MAX) {
+    let data = dt.toString(16);
+    if (!/^[89a-f]$/.test(data.charAt(4))) {
+      dt += BigInt('9223372036854775808'); // 40010000000000000000 => 40018000000000000000
       data = dt.toString(16);
-      if (!/^[89a-f]$/.test(data.charAt(4))) {
-        dt += BigInt(9223372036854775808); // 40010000000000000000 => 40018000000000000000
-        data = dt.toString(16);
-      }
+    }
+    return data;
+  }
+  
+  function increment() {
+    if (dt < FACTORY_DATA_MAX) {
       dt++;
     } else {
-      data = (FACTORY_DATA_MIN).toString(16);
+      dt = FACTORY_DATA_MIN;
       ts++;
-      dt = FACTORY_DATA_MIN + BigInt(1);
+      validateTimestamp(ts);
     }
-
-    return data;
   }
 
   return ({ timestamp, data } : {timestamp?: number, data?: bigint} = {}): Factory => {
     ts = timestamp ?? Date.now();
+    validateTimestamp(ts);
     dt = data ?? parseBigInt(randomData('uuid'), 16);
-    if (dt < FACTORY_DATA_MIN) {
-      dt = FACTORY_DATA_MIN;
+    if (dt < FACTORY_DATA_MIN || dt > FACTORY_DATA_MAX) {
+      throw new Error(ERROR_DATA.replace('##VALUE##', dt.toString()));
+    } else {
+      dt--;
     }
     return {
       ulid: () => {
+        increment();
         const data = generate();
         return formatULID(encodeTimestamp(ts, 'ulid'), convertData(data, 'uuid', 'ulid'));
       },
       uuid: () => {
+        increment();
         const data = generate();
         return formatUUID(encodeTimestamp(ts, 'uuid'), convertData(data, 'uuid', 'uuid'));
       }
