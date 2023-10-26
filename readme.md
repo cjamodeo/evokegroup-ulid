@@ -4,6 +4,12 @@ Universally unique Lexicographically sortable IDentifier
 
 A ULID is a 26 charater string consisting of a encoded timestamp followed by 16 random characters. This library can also encode a ULID in a UUID format and convert between the 2 formats.
 
+Requires NodeJS 16+
+
+Versions for use in the browser is included in `/dist-browser`. 
+
+# Node.js
+
 ## ulid()
 
 Generates a ULID.
@@ -191,3 +197,30 @@ const uuid3 = factory.uuid(); // 018B6286-CC0B-4F0B-DDEC-B6040D445C50
 | FACTORY_DATA_MAX | `bigint` | The maximum data seed value for the `Factory` |
 | TIMESTAMP_MIN | `number` | The minimum allowed timestamp value |
 | TIMESTAMP_MAX | `number` | The maximum allowed timestamp value |
+
+
+# Browser
+
+Versions of the `ulid` function for use in the browser.
+
+## Javascript
+
+The regular javascript browser version will add all exported constants and the `ulid` function to the `window` object for global access.
+
+```html
+<script src="node_modules/@evokegroup/ulid/dist-browser/index.min.js"></script>
+<script>
+  const id = ulid();
+</script>
+```
+
+## Module
+
+```html
+<script src="main.mjs" type="module"></script>
+```
+```javascript
+// main.mjs
+import { ulid } from 'node_modules/@evokegroup/ulid/dist-browser/index.min.mjs';
+const id = ulid();
+```

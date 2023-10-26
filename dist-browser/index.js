@@ -1,22 +1,17 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ulid = exports.FACTORY_DATA_MAX = exports.FACTORY_DATA_MIN = exports.TIMESTAMP_MAX = exports.TIMESTAMP_MIN = exports.UUID_TIMESTAMP_LENGTH = exports.ULID_TIMESTAMP_LENGTH = exports.ULID_CHARS = void 0;
-const node_crypto_1 = __importDefault(require("node:crypto"));
-exports.ULID_CHARS = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
-exports.ULID_TIMESTAMP_LENGTH = 10;
-exports.UUID_TIMESTAMP_LENGTH = 12;
-exports.TIMESTAMP_MIN = 0;
-exports.TIMESTAMP_MAX = 281474976710655;
-exports.FACTORY_DATA_MIN = BigInt('302240678275694148452352');
-exports.FACTORY_DATA_MAX = BigInt('377789318629571617095679');
+(() => {
+
+const ULID_CHARS = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+const ULID_TIMESTAMP_LENGTH = 10;
+const UUID_TIMESTAMP_LENGTH = 12;
+const TIMESTAMP_MIN = 0;
+const TIMESTAMP_MAX = 281474976710655;
+const FACTORY_DATA_MIN = BigInt('302240678275694148452352');
+const FACTORY_DATA_MAX = BigInt('377789318629571617095679');
 const regexULID = /^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$/i;
 const regexUUID = /^\{?[0-9A-F]{8}-?[0-9A-F]{4}-?[0-9A-F]{4}-?[0-9A-F]{4}-?[0-9A-F]{12}\}?$/i;
 const ERROR_INVALID = 'Invalid format';
-const ERROR_TIMESTAMP = `Timestamp (##VALUE##) must be between ${exports.TIMESTAMP_MIN} and ${exports.TIMESTAMP_MAX}`;
-const ERROR_DATA = `Data value (##VALUE##) must be between ${exports.FACTORY_DATA_MIN} and ${exports.FACTORY_DATA_MAX}`;
+const ERROR_TIMESTAMP = `Timestamp (##VALUE##) must be between ${TIMESTAMP_MIN} and ${TIMESTAMP_MAX}`;
+const ERROR_DATA = `Data value (##VALUE##) must be between ${FACTORY_DATA_MIN} and ${FACTORY_DATA_MAX}`;
 function isULID(id) {
     return typeof (id) == 'string' && regexULID.test(id);
 }
@@ -79,7 +74,7 @@ function cleanUUID(id) {
     return id.replace(/[-\{\}]/g, '');
 }
 function randomData(format) {
-    const data = [...node_crypto_1.default.getRandomValues(new Uint16Array(5))]
+    const data = [...crypto.getRandomValues(new Uint16Array(5))]
         .map((val, i) => {
         switch (i) {
             case 0:
@@ -132,10 +127,10 @@ function encodeTimestamp(timestamp, format = 'ulid') {
 }
 function decodeTimestamp(timestamp, format = 'ulid') {
     if (format === 'uuid') {
-        return parseInt(cleanUUID(timestamp).substring(0, exports.UUID_TIMESTAMP_LENGTH).toLowerCase(), 16);
+        return parseInt(cleanUUID(timestamp).substring(0, UUID_TIMESTAMP_LENGTH).toLowerCase(), 16);
     }
     else {
-        return parseInt(crockfordToBase32(timestamp.substring(0, exports.ULID_TIMESTAMP_LENGTH).toUpperCase()), 32);
+        return parseInt(crockfordToBase32(timestamp.substring(0, ULID_TIMESTAMP_LENGTH).toUpperCase()), 32);
     }
 }
 function convertID(id, to) {
@@ -158,25 +153,24 @@ function convertID(id, to) {
     }
 }
 function validateTimestamp(timestamp) {
-    if (timestamp < exports.TIMESTAMP_MIN || timestamp > exports.TIMESTAMP_MAX) {
+    if (timestamp < TIMESTAMP_MIN || timestamp > TIMESTAMP_MAX) {
         throw new Error(ERROR_TIMESTAMP.replace('##VALUE##', timestamp.toString()));
     }
 }
 function formatULID(timestamp, data) {
-    return `${timestamp.padStart(exports.ULID_TIMESTAMP_LENGTH, '0')}${data.padStart(16, '0')}`;
+    return `${timestamp.padStart(ULID_TIMESTAMP_LENGTH, '0')}${data.padStart(16, '0')}`;
 }
 function formatUUID(timestamp, data) {
-    const s = `${timestamp.padStart(exports.UUID_TIMESTAMP_LENGTH, '0')}${data.padStart(20, '0')}`.toUpperCase().padStart(32, '0');
+    const s = `${timestamp.padStart(UUID_TIMESTAMP_LENGTH, '0')}${data.padStart(20, '0')}`.toUpperCase().padStart(32, '0');
     return `${s.substring(0, 8)}-${s.substring(8, 12)}-${s.substring(12, 16)}-${s.substring(16, 20)}-${s.substring(20)}`;
 }
 function ulid(timestamp) {
-    timestamp = timestamp !== null && timestamp !== void 0 ? timestamp : Date.now();
+    timestamp = timestamp ?? Date.now();
     validateTimestamp(timestamp);
     return formatULID(encodeTimestamp(timestamp), randomData('ulid'));
 }
-exports.ulid = ulid;
 ulid.uuid = (timestamp) => {
-    timestamp = timestamp !== null && timestamp !== void 0 ? timestamp : Date.now();
+    timestamp = timestamp ?? Date.now();
     validateTimestamp(timestamp);
     return formatUUID(encodeTimestamp(timestamp, 'uuid'), randomData('uuid'));
 };
@@ -190,10 +184,10 @@ ulid.timestamp = (id) => {
 ulid.data = (id) => {
     const format = getIdFormat(id);
     if (format === 'uuid') {
-        return parseBigInt(cleanUUID(id).substring(exports.UUID_TIMESTAMP_LENGTH).toLowerCase(), 16);
+        return parseBigInt(cleanUUID(id).substring(UUID_TIMESTAMP_LENGTH).toLowerCase(), 16);
     }
     else {
-        return parseBigInt(crockfordToBase32(id.substring(exports.ULID_TIMESTAMP_LENGTH).toUpperCase()), 32);
+        return parseBigInt(crockfordToBase32(id.substring(ULID_TIMESTAMP_LENGTH).toUpperCase()), 32);
     }
 };
 ulid.toUUID = (id) => {
@@ -204,7 +198,7 @@ ulid.fromUUID = (id) => {
 };
 ulid.factory = (() => {
     let ts = Date.now();
-    let dt = exports.FACTORY_DATA_MIN;
+    let dt = FACTORY_DATA_MIN;
     let f = 'ulid';
     function generate() {
         let data = dt.toString(16);
@@ -215,20 +209,20 @@ ulid.factory = (() => {
         return data;
     }
     function increment() {
-        if (dt < exports.FACTORY_DATA_MAX) {
+        if (dt < FACTORY_DATA_MAX) {
             dt++;
         }
         else {
-            dt = exports.FACTORY_DATA_MIN;
+            dt = FACTORY_DATA_MIN;
             ts++;
             validateTimestamp(ts);
         }
     }
     return ({ timestamp, data } = {}) => {
-        ts = timestamp !== null && timestamp !== void 0 ? timestamp : Date.now();
+        ts = timestamp ?? Date.now();
         validateTimestamp(ts);
-        dt = data !== null && data !== void 0 ? data : parseBigInt(randomData('uuid'), 16);
-        if (dt < exports.FACTORY_DATA_MIN || dt > exports.FACTORY_DATA_MAX) {
+        dt = data ?? parseBigInt(randomData('uuid'), 16);
+        if (dt < FACTORY_DATA_MIN || dt > FACTORY_DATA_MAX) {
             throw new Error(ERROR_DATA.replace('##VALUE##', dt.toString()));
         }
         else {
@@ -247,4 +241,14 @@ ulid.factory = (() => {
             }
         };
     };
+})();
+
+window.ULID_CHARS = ULID_CHARS;
+window.ULID_TIMESTAMP_LENGTH = ULID_TIMESTAMP_LENGTH;
+window.UUID_TIMESTAMP_LENGTH = UUID_TIMESTAMP_LENGTH;
+window.TIMESTAMP_MIN = TIMESTAMP_MIN;
+window.TIMESTAMP_MAX = TIMESTAMP_MAX;
+window.FACTORY_DATA_MIN = FACTORY_DATA_MIN;
+window.FACTORY_DATA_MAX = FACTORY_DATA_MAX;
+window.ulid = ulid;
 })();

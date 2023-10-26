@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 export const ULID_CHARS: string = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 export const ULID_TIMESTAMP_LENGTH: number = 10;
