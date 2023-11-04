@@ -42,36 +42,27 @@ function parseBigInt(str: string, radix: number): bigint {
   return negate ? -big : big;
 }
 
-function base32ToCrockford(str: string): string {
-  return str.toUpperCase().split('').map((s) => {
-    let index = s.charCodeAt(0);
-    let shift = 0;
-    if (index >= 73) { // I => J
-      shift++;
-      if (index >= 75) shift++; // K => M
-      if (index >= 77) shift++; // M => P
-      if (index >= 82) shift++; // R => V
-      return String.fromCharCode(index + shift);
-    } else {
-      return s;
-    }
-  }).join('');
+function encode(val: bigint | number): string {
+  const str: string[] = [];
+  const type = typeof(val);
+  const base: number | bigint = type == 'number' ? ULID_CHARS.length : BigInt(ULID_CHARS.length);
+  while (val > 0) {
+    str.unshift(ULID_CHARS[(val as any) % (base as any)]);
+    val = type == 'number' ? Math.floor((val as number) / (base as number)) : ((val as bigint) / (base as bigint));
+  }
+  return str.join('');
 }
 
-function crockfordToBase32(str: string): string {
-  return str.toUpperCase().split('').map((s) => {
-    let index = s.charCodeAt(0);
-    let shift = 0;
-    if (index >= 74) { // J => I
-      shift++;
-      if (index >= 77) shift++; // M => K
-      if (index >= 80) shift++; // P => M
-      if (index >= 86) shift++; // V => R
-      return String.fromCharCode(index - shift);
-    } else {
-      return s;
-    }
-  }).join('').toLowerCase();
+function decode(str: string): bigint {
+  const val = str.toUpperCase();
+  let num: bigint = BigInt(0);
+  const length: number = val.length;
+  const base: bigint = BigInt(ULID_CHARS.length);
+
+  for (let i = 0; i < length; i++) {
+    num = (num * base) + BigInt(ULID_CHARS.indexOf(val[i]));
+  }
+  return num;
 }
 
 function cleanUUID(id: string): string {
@@ -108,14 +99,14 @@ function convertData(data: string, from: IDFormat, to: IDFormat) {
     if (to === 'uuid') {
       return data;
     } else {
-      return base32ToCrockford(parseBigInt(data, 16).toString(32));
+      return encode(parseBigInt(data, 16));
     }
   } else {
     data = data.substring(data.length - 16).toUpperCase();
     if (to === 'ulid') {
       return data;
     } else {
-      return parseBigInt(crockfordToBase32(data), 32).toString(16);
+      return decode(data).toString(16);
     }
   }
 }
@@ -124,7 +115,7 @@ function encodeTimestamp(timestamp: number, format: IDFormat = 'ulid'): string {
   if (format === 'uuid') {
     return timestamp.toString(16).toUpperCase();
   } else {
-    return base32ToCrockford(timestamp.toString(32));
+    return encode(timestamp);
   }
 }
 
@@ -132,7 +123,7 @@ function decodeTimestamp(timestamp: string, format: IDFormat = 'ulid'): number {
   if (format === 'uuid') {
     return parseInt(cleanUUID(timestamp).substring(0, UUID_TIMESTAMP_LENGTH).toLowerCase(), 16);
   } else {
-    return parseInt(crockfordToBase32(timestamp.substring(0, ULID_TIMESTAMP_LENGTH).toUpperCase()), 32);
+    return Number(decode(timestamp.substring(0, ULID_TIMESTAMP_LENGTH)));
   }
 }
 
@@ -200,7 +191,7 @@ ulid.data = (id: string): bigint => {
   if (format === 'uuid') {
     return parseBigInt(cleanUUID(id).substring(UUID_TIMESTAMP_LENGTH).toLowerCase(), 16);
   } else {
-    return parseBigInt(crockfordToBase32(id.substring(ULID_TIMESTAMP_LENGTH).toUpperCase()), 32);
+    return decode(id.substring(ULID_TIMESTAMP_LENGTH).toUpperCase());
   }
 };
 

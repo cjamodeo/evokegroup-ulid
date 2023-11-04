@@ -6,7 +6,7 @@ interface Tests {
   data?: string[];
   failed: string[];
 }
-/*
+
 console.log(ulid());
 console.log(ulid.uuid());
 const timestamp = 281474976710655; // Date.now();
@@ -66,7 +66,7 @@ for (let i = 0; i < 10; i++) {
     console.log(factory.uuid());
   }
 }
-*/
+
 
 (() => {
   console.log();

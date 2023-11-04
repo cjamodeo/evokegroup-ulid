@@ -7,28 +7,28 @@ interface Tests {
   failed: string[];
 }
 
-// (() => {
-//   const id = ulid();
-//   console.log(ulid.data(id));
-//   const uuid = ulid.convert(id, 'uuid');
-//   const id_back = ulid.convert(uuid, 'ulid');
-//   console.log(`${id} => ${uuid} => ${id_back}`);
-//   console.log(id_back === id);
-// })();
+(() => {
+  const id = ulid();
+  console.log(ulid.data(id));
+  const uuid = ulid.toUUID(id);
+  const id_back = ulid.fromUUID(uuid);
+  console.log(`${id} => ${uuid} => ${id_back}`);
+  console.log(id_back === id);
+})();
 
-// (() => {
-//   const uuid = randomUUID();
-//   console.log(ulid.data(uuid));
-//   const id = ulid.convert(uuid, 'ulid');
-//   const uuid_back = ulid.convert(id, 'uuid').toLowerCase();
-//   console.log(`${uuid} => ${id} => ${uuid_back}`);
-//   console.log(uuid_back === uuid);
-// })();
+(() => {
+  const uuid = randomUUID();
+  console.log(ulid.data(uuid));
+  const id = ulid.fromUUID(uuid);
+  const uuid_back = ulid.toUUID(id).toLowerCase();
+  console.log(`${uuid} => ${id} => ${uuid_back}`);
+  console.log(uuid_back === uuid);
+})();
 
-// console.log(ulid.convert('01HDEH0EYSJPRX17CTBBBXEFSP', 'uuid'));
-// console.log(ulid.convert('018B5D10-3BD9-95B1-D09D-9A5AD7D73F36', 'ulid'));
-// console.log(ulid.data('01HDEH0EYSJPRX17CTBBBXEFSP'));
-// console.log(ulid.data('018B5D10-3BD9-95B1-D09D-9A5AD7D73F36'));
+console.log(ulid.toUUID('01HDEH0EYSJPRX17CTBBBXEFSP'));
+console.log(ulid.fromUUID('018B5D10-3BD9-95B1-D09D-9A5AD7D73F36'));
+console.log(ulid.data('01HDEH0EYSJPRX17CTBBBXEFSP'));
+console.log(ulid.data('018B5D10-3BD9-95B1-D09D-9A5AD7D73F36'));
 
 (() => {
   const tests: Tests = {
